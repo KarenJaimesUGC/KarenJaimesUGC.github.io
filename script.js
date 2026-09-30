@@ -4,13 +4,11 @@
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    /* =====================================
+    /* =========================================
        SMOOTH SCROLL
-    ===================================== */
+    ========================================= */
 
-    const internalLinks = document.querySelectorAll(
-        'a[href^="#"]'
-    );
+    const internalLinks = document.querySelectorAll('a[href^="#"]');
 
     internalLinks.forEach(function (link) {
 
@@ -18,14 +16,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const targetId = this.getAttribute("href");
 
-            // Ignorar enlaces que solamente tienen "#"
             if (!targetId || targetId === "#") {
                 return;
             }
 
             const target = document.querySelector(targetId);
 
-            // Si no existe el destino, no hacemos nada
             if (!target) {
                 return;
             }
@@ -42,15 +38,14 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
-    /* =====================================
-       ANIMACIONES AL HACER SCROLL
-    ===================================== */
+    /* =========================================
+       SCROLL ANIMATIONS
+    ========================================= */
 
     const animatedElements = document.querySelectorAll(
         ".service-card, .portfolio-card, .process-item, .about-point"
     );
 
-    // Comprobar si el navegador soporta IntersectionObserver
     if ("IntersectionObserver" in window) {
 
         const observer = new IntersectionObserver(
@@ -62,9 +57,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                         entry.target.classList.add("visible");
 
-                        observerInstance.unobserve(
-                            entry.target
-                        );
+                        observerInstance.unobserve(entry.target);
 
                     }
 
@@ -76,7 +69,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         );
 
-
         animatedElements.forEach(function (element) {
 
             element.classList.add("animate");
@@ -87,7 +79,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     } else {
 
-        // Para navegadores antiguos
         animatedElements.forEach(function (element) {
 
             element.classList.add("visible");
@@ -97,13 +88,175 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-    /* =====================================
-       CONTROL DE IMÁGENES
-       
-       Si una imagen todavía no existe,
-       evitamos mostrar el típico ícono
-       de imagen rota.
-    ===================================== */
+    /* =========================================
+       LIGHTBOX PORTFOLIO
+    ========================================= */
+
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImage = document.getElementById("lightbox-image");
+    const closeButton = document.getElementById("lightbox-close");
+    const prevButton = document.getElementById("lightbox-prev");
+    const nextButton = document.getElementById("lightbox-next");
+
+    const portfolioLinks = Array.from(
+        document.querySelectorAll(".portfolio-lightbox")
+    );
+
+    let currentImage = 0;
+
+
+    function openLightbox(index) {
+
+        if (!portfolioLinks.length) {
+            return;
+        }
+
+        currentImage = index;
+
+        const image = portfolioLinks[currentImage].querySelector("img");
+
+        if (!image) {
+            return;
+        }
+
+        lightboxImage.src = portfolioLinks[currentImage].href;
+        lightboxImage.alt = image.alt;
+
+        lightbox.classList.add("active");
+
+        document.body.classList.add("lightbox-open");
+
+    }
+
+
+    function closeLightbox() {
+
+        lightbox.classList.remove("active");
+
+        document.body.classList.remove("lightbox-open");
+
+        setTimeout(function () {
+            lightboxImage.src = "";
+        }, 300);
+
+    }
+
+
+    function showNextImage() {
+
+        currentImage++;
+
+        if (currentImage >= portfolioLinks.length) {
+            currentImage = 0;
+        }
+
+        openLightbox(currentImage);
+
+    }
+
+
+    function showPreviousImage() {
+
+        currentImage--;
+
+        if (currentImage < 0) {
+            currentImage = portfolioLinks.length - 1;
+        }
+
+        openLightbox(currentImage);
+
+    }
+
+
+    portfolioLinks.forEach(function (link, index) {
+
+        link.addEventListener("click", function (event) {
+
+            event.preventDefault();
+
+            openLightbox(index);
+
+        });
+
+    });
+
+
+    if (closeButton) {
+
+        closeButton.addEventListener("click", function () {
+
+            closeLightbox();
+
+        });
+
+    }
+
+
+    if (nextButton) {
+
+        nextButton.addEventListener("click", function (event) {
+
+            event.stopPropagation();
+
+            showNextImage();
+
+        });
+
+    }
+
+
+    if (prevButton) {
+
+        prevButton.addEventListener("click", function (event) {
+
+            event.stopPropagation();
+
+            showPreviousImage();
+
+        });
+
+    }
+
+
+    /* Cerrar haciendo clic fuera de la imagen */
+
+    lightbox.addEventListener("click", function (event) {
+
+        if (event.target === lightbox) {
+
+            closeLightbox();
+
+        }
+
+    });
+
+
+    /* Navegación con teclado */
+
+    document.addEventListener("keydown", function (event) {
+
+        if (!lightbox.classList.contains("active")) {
+            return;
+        }
+
+        if (event.key === "Escape") {
+            closeLightbox();
+        }
+
+        if (event.key === "ArrowRight") {
+            showNextImage();
+        }
+
+        if (event.key === "ArrowLeft") {
+            showPreviousImage();
+        }
+
+    });
+
+
+    /* =========================================
+       IMAGE ERROR HANDLING
+    ========================================= */
 
     const images = document.querySelectorAll("img");
 
@@ -124,35 +277,18 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
-    /* =====================================
-       AÑO AUTOMÁTICO
-       
-       Si el HTML tiene:
-       
-       <span id="current-year"></span>
-       
-       automáticamente colocará el año actual.
-    ===================================== */
+    /* =========================================
+       CURRENT YEAR
+    ========================================= */
 
-    const currentYear = document.getElementById(
-        "current-year"
-    );
+    const currentYear = document.getElementById("current-year");
 
     if (currentYear) {
 
-        currentYear.textContent =
-            new Date().getFullYear();
+        currentYear.textContent = new Date().getFullYear();
 
     }
 
-
-    /* =====================================
-       MENSAJE DE COMPROBACIÓN
-       
-       Sirve para verificar desde la consola
-       del navegador que JavaScript está
-       funcionando correctamente.
-    ===================================== */
 
     console.log(
         "Karen Jaimes UGC Portfolio cargado correctamente."
